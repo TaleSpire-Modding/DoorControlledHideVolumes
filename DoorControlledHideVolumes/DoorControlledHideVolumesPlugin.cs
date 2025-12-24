@@ -15,7 +15,7 @@ namespace HideVolumeExtensions
     [BepInPlugin(Guid, Name, Version)]
     [BepInDependency(RadialUIPlugin.Guid)]
     [BepInDependency(SetInjectionFlag.Guid)]
-    public sealed class HVEPlugin : BaseUnityPlugin
+    public sealed class DoorControlledHideVolumesPlugin : BaseUnityPlugin
     {
         // constants
         public const string Guid = "org.HF.plugins.DCHV";

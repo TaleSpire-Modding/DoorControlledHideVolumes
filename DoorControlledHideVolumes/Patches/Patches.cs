@@ -26,8 +26,8 @@ namespace HideVolumeExtensions.Patches
         {
             _hideVolumeItems = ____hideVolumeItems.ToDictionary(hv => hv.HideVolume.Id.ToString());
 
-            HVEPlugin._logger.LogDebug($"HideVolumeManager Patched. Total HideVolumes: {_hideVolumeItems.Count}");
-            HVEPlugin._logger.LogDebug($"HideVolumeManager Patched. HideVolumes: {string.Join(", ", _hideVolumeItems.Keys)}");
+            DoorControlledHideVolumesPlugin._logger.LogDebug($"HideVolumeManager Patched. Total HideVolumes: {_hideVolumeItems.Count}");
+            DoorControlledHideVolumesPlugin._logger.LogDebug($"HideVolumeManager Patched. HideVolumes: {string.Join(", ", _hideVolumeItems.Keys)}");
         }
     }
 
@@ -39,13 +39,13 @@ namespace HideVolumeExtensions.Patches
 
         static void Prefix(ref PlaceableHandle __instance)
         {
-            HVEPlugin._logger.LogInfo($"Prefix Triggr");
+            DoorControlledHideVolumesPlugin._logger.LogInfo($"Prefix Triggr");
             if (!__instance.HasValue || !InternalPackManager.Placeables.TryGetValue(__instance.ContentId, out var item) || !__instance.TryGetPlaceableRef(out var placeableRef))
             {
                 return;
             }
 
-            HVEPlugin._logger.LogInfo($"Data: {item.Value.Id}: {placeableRef.Data.WorldOrigin}");
+            DoorControlledHideVolumesPlugin._logger.LogInfo($"Data: {item.Value.Id}: {placeableRef.Data.WorldOrigin}");
         }
 
         static void Postfix(ref PlaceableHandle __instance, ref Zone ____zone)
@@ -55,7 +55,7 @@ namespace HideVolumeExtensions.Patches
             if (!LocalClient.IsInGmMode)
                 return;
 
-            HVEPlugin._logger.LogDebug("Placeable Interacted with");
+            DoorControlledHideVolumesPlugin._logger.LogDebug("Placeable Interacted with");
 
             if (!__instance.HasValue || !InternalPackManager.Placeables.TryGetValue(__instance.ContentId, out var item) || !__instance.TryGetPlaceableRef(out var placeableRef))
             {
@@ -89,9 +89,9 @@ namespace HideVolumeExtensions.Patches
 
         static void SelectDoor(MapMenuItem item, object o)
         {
-            HVEPlugin._logger.LogDebug($"Door value {selectedDoor}");
+            DoorControlledHideVolumesPlugin._logger.LogDebug($"Door value {selectedDoor}");
             selectedDoor = lastDoor;
-            HVEPlugin._logger.LogDebug($"Door updated to {selectedDoor}");
+            DoorControlledHideVolumesPlugin._logger.LogDebug($"Door updated to {selectedDoor}");
         }
     }
 
@@ -109,7 +109,7 @@ namespace HideVolumeExtensions.Patches
                 try
                 {
                     // Check directory exists
-                    string filePath = Path.Join(HVEPlugin.LocalHidden, BoardSessionManager.CurrentBoardInfo.Id.ToString());
+                    string filePath = Path.Join(DoorControlledHideVolumesPlugin.LocalHidden, BoardSessionManager.CurrentBoardInfo.Id.ToString());
                     
                     if (File.Exists(filePath))
                     {
@@ -123,7 +123,7 @@ namespace HideVolumeExtensions.Patches
                 }
                 catch (System.Exception e)
                 {
-                    HVEPlugin._logger.LogWarning($"Failed to load door hide volumes: {e.Message}");
+                    DoorControlledHideVolumesPlugin._logger.LogWarning($"Failed to load door hide volumes: {e.Message}");
                     DoorHideVolumes = new Dictionary<string, List<string>>();
                 }
             }
@@ -133,45 +133,45 @@ namespace HideVolumeExtensions.Patches
         {
             // Check directory exists
             string json = JsonConvert.SerializeObject(DoorHideVolumes, Formatting.Indented);
-            File.WriteAllText(Path.Join(HVEPlugin.LocalHidden, BoardSessionManager.CurrentBoardInfo.Id.ToString()), json);
+            File.WriteAllText(Path.Join(DoorControlledHideVolumesPlugin.LocalHidden, BoardSessionManager.CurrentBoardInfo.Id.ToString()), json);
         }
 
         static void Postfix(ref StateMessageV6 msg, ref bool resetLocalTime, ref StateMachineManager __instance)
         {
             string sid = msg.QualifiedScriptId.ScriptId.ToString();
 
-            HVEPlugin._logger.LogDebug($"{sid}:{msg.QualifiedScriptId.ZoneCoord}");
+            DoorControlledHideVolumesPlugin._logger.LogDebug($"{sid}:{msg.QualifiedScriptId.ZoneCoord}");
             
             sid = $"{sid}:{msg.QualifiedScriptId.ZoneCoord}";
 
             LoadDoorHideVolumes();
             if (msg.ExecutionStateCode == 0)
             {
-                HVEPlugin._logger.LogDebug($"message state code: {msg.ExecutionStateCode}");
+                DoorControlledHideVolumesPlugin._logger.LogDebug($"message state code: {msg.ExecutionStateCode}");
 
                 if (DoorHideVolumes.ContainsKey(sid))
                 {
-                    HVEPlugin._logger.LogDebug($"Door Hide Volumes found for {sid}");
+                    DoorControlledHideVolumesPlugin._logger.LogDebug($"Door Hide Volumes found for {sid}");
                     foreach (var volumeId in DoorHideVolumes[sid].Where(volumeId => HVMPatch._hideVolumeItems.ContainsKey(volumeId)))
                     {
-                        HVEPlugin._logger.LogDebug($"Processing volume {volumeId} for door {sid}");
+                        DoorControlledHideVolumesPlugin._logger.LogDebug($"Processing volume {volumeId} for door {sid}");
                         if (HVMPatch._hideVolumeItems[volumeId].HideVolume.IsActive)
-                            HVEPlugin.HVToDeactivate.Push(HVMPatch._hideVolumeItems[volumeId]);
+                            DoorControlledHideVolumesPlugin.HVToDeactivate.Push(HVMPatch._hideVolumeItems[volumeId]);
                     }
                 }
             }
-            else if (msg.ExecutionStateCode == 1 && HVEPlugin.HideOnClose.Value)
+            else if (msg.ExecutionStateCode == 1 && DoorControlledHideVolumesPlugin.HideOnClose.Value)
             {
-                HVEPlugin._logger.LogDebug($"message state code: {msg.ExecutionStateCode}");
+                DoorControlledHideVolumesPlugin._logger.LogDebug($"message state code: {msg.ExecutionStateCode}");
 
                 if (DoorHideVolumes.ContainsKey(sid))
                 {
-                    HVEPlugin._logger.LogDebug($"Door Hide Volumes found for {sid}");
+                    DoorControlledHideVolumesPlugin._logger.LogDebug($"Door Hide Volumes found for {sid}");
                     foreach (var volumeId in DoorHideVolumes[sid].Where(volumeId => HVMPatch._hideVolumeItems.ContainsKey(volumeId)))
                     {
-                        HVEPlugin._logger.LogDebug($"Processing volume {volumeId} for door {sid}");
+                        DoorControlledHideVolumesPlugin._logger.LogDebug($"Processing volume {volumeId} for door {sid}");
                         if (HVMPatch._hideVolumeItems[volumeId].HideVolume.IsActive == false)
-                            HVEPlugin.HVToActivate.Push(HVMPatch._hideVolumeItems[volumeId]);
+                            DoorControlledHideVolumesPlugin.HVToActivate.Push(HVMPatch._hideVolumeItems[volumeId]);
                     }
                 }
             }
