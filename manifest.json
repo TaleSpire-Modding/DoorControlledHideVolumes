@@ -1,0 +1,12 @@
+{
+  "namespace": "HolloFox_TS",
+  "name": "Door_Controlled_Hide_Volumes",
+  "description": "This is a mapping Tool to link doors and HideVolumes",
+  "version_number": "1.1.0",
+  "dependencies": [
+    "bbepisTaleSpire-BepInExPack-5.4.10",
+    "brcoding-SetInjectionFlagPlugin-3.1.0",
+    "HolloFox_TS-RadialUIPlugin-3.0.0"
+  ],
+  "website_url": "https://github.com/TaleSpire-Modding/DoorControlledHideVolumes"
+}

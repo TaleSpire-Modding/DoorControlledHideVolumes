@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>8.0</LangVersion>
+    <AssemblyName>DoorControlledHideVolumesPlugin</AssemblyName>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Version>0.0.0</Version>
+    <PackageId>TaleSpire.$(AssemblyName)</PackageId>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/TaleSpire-Modding/DoorControlledHideVolumes.git</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/TaleSpire-Modding/DoorControlledHideVolumes.git</PackageProjectUrl>
+    <Description>This is a mapping Tool to link doors and HideVolumes</Description>
+    <PackageTags>TaleSpire;Mods;</PackageTags>
+    <licenseUrl>https://github.com/TaleSpire-Modding/DoorControlledHideVolumes/raw/main/LICENSE.txt</licenseUrl>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <Authors>HolloFox</Authors>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\LICENSE.txt">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\manifest.json">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\CHANGELOG.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="TaleSpire" Version="1.5.0"></PackageReference>
+    <PackageReference Include="Talespire.BepInEx" Version="5.4.22"></PackageReference>
+    <PackageReference Include="TaleSpire.RadialUI" Version="3.0.1" />
+    <PackageReference Include="TaleSpire.SetInjectionFlagPlugin" Version="3.1.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+</Project>
