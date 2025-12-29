@@ -15,7 +15,7 @@ namespace HideVolumeExtensions
     [BepInPlugin(Guid, Name, Version)]
     [BepInDependency(RadialUIPlugin.Guid)]
     [BepInDependency(SetInjectionFlag.Guid)]
-    public sealed class DoorControlledHideVolumesPlugin : BaseUnityPlugin
+    public sealed class DoorControlledHideVolumesPlugin : DependencyUnityPlugin
     {
         // constants
         public const string Guid = "org.HF.plugins.DCHV";
@@ -42,13 +42,10 @@ namespace HideVolumeExtensions
             HideOnClose = config.Bind("Door Volume Linking", "Hide On Close", false);
         }
 
-        public static void UnPatch()
-        {
-            harmony.UnpatchSelf();
-            _logger.LogDebug($"{Name}: UnPatched.");
-        }
-
-        private void Awake()
+        /// <summary>
+        /// Awake plugin
+        /// </summary>
+        protected override void OnAwake()
         {
             _logger = Logger;
             LocalHidden = Path.GetDirectoryName(Info.Location)+"/BoardData";
@@ -56,8 +53,7 @@ namespace HideVolumeExtensions
 
             DoConfig(Config);
             DoPatching();
-            _logger.LogInfo($"{Name} is Active.");
-
+            
             RadialUIPlugin.AddOnHideVolume(Guid + "AddDoor", new MapMenu.ItemArgs
             {
                 CloseMenuOnActivate = true,
@@ -70,21 +66,53 @@ namespace HideVolumeExtensions
                 Title = "Remove show on Door Open",
                 Action = RemoveDoorOpen,
             }, CanRemoveVolume);
+
+            HVToActivate = new ConcurrentStack<HideVolumeItem>();
+            HVToDeactivate = new ConcurrentStack<HideVolumeItem>();
+
+            _logger.LogInfo($"{Name} loaded");
         }
 
-        internal static ConcurrentStack<HideVolumeItem> HVToDeactivate = new ConcurrentStack<HideVolumeItem>();
-        internal static ConcurrentStack<HideVolumeItem> HVToActivate = new ConcurrentStack<HideVolumeItem>();
+        /// <summary>
+        /// Cleanup on destroy
+        /// </summary>
+        protected override void OnDestroyed()
+        {
+            // Unregister Hide Volume Menu Items
+            RadialUIPlugin.RemoveOnHideVolume(Guid + "AddDoor");
+            RadialUIPlugin.RemoveOnHideVolume(Guid + "RemoveDoor");
+
+            // Clear Stacks
+            HVToActivate.Clear();
+            HVToDeactivate.Clear();
+
+            // Unpatch Harmony Patches
+            harmony.UnpatchSelf();
+
+            // Nullify References
+            harmony = null;
+            HideOnClose = null;
+            LocalHidden = null;
+            _logger = null;
+            HVToActivate = null;
+            HVToDeactivate = null;
+
+            Logger.LogDebug($"{Name} unloaded");   
+        }
+
+        internal static ConcurrentStack<HideVolumeItem> HVToDeactivate;
+        internal static ConcurrentStack<HideVolumeItem> HVToActivate;
         
         private void Update()
         {
-            if (HVToDeactivate.TryPop(out HideVolumeItem item))
+            if (HVToDeactivate?.TryPop(out HideVolumeItem item) ?? false)
             {
                 _logger.LogDebug($"Processing HideVolumeItem: {item.HideVolume.Id}");
                 item.ChangeIsActive(false);
                 SimpleSingletonBehaviour<HideVolumeManager>.Instance.SetHideVolumeState(item.HideVolume);
             }
 
-            if (HVToActivate.TryPop(out HideVolumeItem item2))
+            if (HVToActivate?.TryPop(out HideVolumeItem item2) ?? false)
             {
                 _logger.LogDebug($"Processing HideVolumeItem: {item2.HideVolume.Id}");
                 item2.ChangeIsActive(true);

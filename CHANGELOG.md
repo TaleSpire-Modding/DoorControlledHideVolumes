@@ -1,2 +1,3 @@
+- 1.2.0: Added dynamic unpatch support via DependencyUnityPlugin
 - 1.1.0: Official Repository Release, Implemented deployment pipelines. Updated Documentation.
 - 1.0.0: Initial release
