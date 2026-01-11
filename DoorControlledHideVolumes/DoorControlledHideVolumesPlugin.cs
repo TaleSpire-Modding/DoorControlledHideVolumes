@@ -15,7 +15,7 @@ namespace HideVolumeExtensions
     [BepInPlugin(Guid, Name, Version)]
     [BepInDependency(RadialUIPlugin.Guid)]
     [BepInDependency(SetInjectionFlag.Guid)]
-    public sealed class DoorControlledHideVolumesPlugin : DependencyUnityPlugin
+    public sealed class DoorControlledHideVolumesPlugin : DependencyUnityPlugin<DoorControlledHideVolumesPlugin>
     {
         // constants
         public const string Guid = "org.HF.plugins.DCHV";
@@ -30,14 +30,7 @@ namespace HideVolumeExtensions
 
         internal static string LocalHidden;
 
-        public static void DoPatching()
-        {
-            harmony = new Harmony(Guid);
-            harmony.PatchAll();
-            _logger.LogInfo($"{Name}: Patched.");
-        }
-
-        private static void DoConfig(ConfigFile config)
+        protected override void OnSetupConfig(ConfigFile config)
         {
             HideOnClose = config.Bind("Door Volume Linking", "Hide On Close", false);
         }
@@ -51,9 +44,10 @@ namespace HideVolumeExtensions
             LocalHidden = Path.GetDirectoryName(Info.Location)+"/BoardData";
             Directory.CreateDirectory(LocalHidden);
 
-            DoConfig(Config);
-            DoPatching();
-            
+            harmony = new Harmony(Guid);
+            harmony.PatchAll();
+            _logger.LogInfo($"{Name}: Patched.");
+
             RadialUIPlugin.AddOnHideVolume(Guid + "AddDoor", new MapMenu.ItemArgs
             {
                 CloseMenuOnActivate = true,
@@ -78,16 +72,20 @@ namespace HideVolumeExtensions
         /// </summary>
         protected override void OnDestroyed()
         {
-            // Unregister Hide Volume Menu Items
-            RadialUIPlugin.RemoveOnHideVolume(Guid + "AddDoor");
-            RadialUIPlugin.RemoveOnHideVolume(Guid + "RemoveDoor");
-
-            // Clear Stacks
-            HVToActivate.Clear();
-            HVToDeactivate.Clear();
-
             // Unpatch Harmony Patches
-            harmony.UnpatchSelf();
+            if (harmony != null)
+            {
+                harmony?.UnpatchSelf();
+
+            
+                // Unregister Hide Volume Menu Items
+                RadialUIPlugin.RemoveOnHideVolume(Guid + "AddDoor");
+                RadialUIPlugin.RemoveOnHideVolume(Guid + "RemoveDoor");
+
+                // Clear Stacks
+                HVToActivate.Clear();
+                HVToDeactivate.Clear();
+            }
 
             // Nullify References
             harmony = null;
